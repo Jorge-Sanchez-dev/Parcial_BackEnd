@@ -10,17 +10,19 @@ import cors from "cors";
 import axios from "axios";
 
 // Tipos
-type Team = {
-  id: number;
-  name: string;
-  city: string;
-  titles: number;
+type LD = {
+    id: number
+    filmName: string
+    rotationType: "CAV" | "CLV",
+    region: string,
+    lengthMinutes: number,
+    videoFormat: "NTSC" | "PAL"
 };
 
 // "Base de datos" simulada
-let teams: Team[] = [
-  { id: 1, name: "Lakers", city: "Los Angeles", titles: 17 },
-  { id: 2, name: "Celtics", city: "Boston", titles: 17 },
+let discos: LD[] = [
+    { id: 1, filmName: "War Hourse", rotationType: "CAV", region: "España", lengthMinutes: 120, videoFormat: "NTSC" },
+    { id: 2, filmName: "El Nano", rotationType: "CAV", region: "España", lengthMinutes: 120, videoFormat: "NTSC" },
 ];
 
 const app = express();
@@ -47,24 +49,33 @@ const testApi = async () => {
     baseURL: `http://localhost:3000`,
   });
 try {
-    console.log("\nEquipos iniciales:");
-    let res = await api.get("/teams");
+    //Obtener todos los discos (GET /ld).
+    console.log("\nDiscos iniciales:");
+    let res = await api.get("/ld");
+    // Muestra la lista inicial en consola.
     console.log(res.data);
 
-    const newTeam = { name: "Bulls", city: "Chicago", titles: 6 };
-    const created = await api.post("/teams", newTeam);
-    console.log("Equipo creado:", created.data);
+    //Crear un nuevo disco (POST /ld)
+    const newTeam = { filmName: "Los 100", rotationType: "CAV", region: "Española", lengthMinutes: 150, videoFormat: "PAL" };
+    const created = await api.post("/ld", newTeam);
+    console.log("Disco creado:", created.data);
 
-    console.log("\nObtener equipos tras la incorporación:");
-    res = await api.get("/teams");
+    //Volver a obtener todos los equipos (GET /teams)
+    //Comprueba que aparece el nuevo equipo
+    console.log("\nObtener discos tras la incorporación:");
+    res = await api.get("/ld");
     console.log(res.data);
 
-    await api.delete(`/teams/${created.data.id}`);
+    //Eliminar ese equipo (DELETE /ld/:id)
+    console.log("\nEliminando disco:");
+    await api.delete(`/ld/${created.data.id}`);
 
-    console.log("\nObtener equipos tras la eliminación:");
-    res = await api.get("/teams");
+    //Mostrar la lista final
+    console.log("\nObtener discos tras la eliminación:");
+    res = await api.get("/ld");
     console.log(res.data);
 
+    //Finalizar test
     console.log("\nTest Finalizado.");
   } catch (err: any) {
     console.error("ERROR", err.message);
@@ -77,45 +88,47 @@ app.get("/", (req: Request, res: Response) => {
   res.send("Okey makei, te has conectado correctamente.");
 });
 
-app.get("/teams", (req: Request, res: Response) => {
-  res.json(teams);
+app.get("/ld", (req: Request, res: Response) => {
+  res.json(discos);
 });
 
-app.get("/teams/:id", (req: Request, res: Response) => {
+app.get("/ld/:id", (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const team = teams.find((t) => t.id === id);
+  const team = discos.find((t) => t.id === id);
    return team
     ? res.json(team)
-    : res.status(404).json({ error: "Equipo no encontrado" });
+    : res.status(404).json({ error: "Disco no encontrado" });
 });
 
 // --- POST ---
-app.post("/teams", (req: Request, res: Response) => {
-  const { name, city, titles } = req.body;
-  if (!name || !city || typeof titles !== "number") {
+app.post("/ld", (req: Request, res: Response) => {
+  const { filmName, rotationType, region, lengthMinutes, videoFormat } = req.body;
+  if (!filmName || !rotationType|| !region || !lengthMinutes || !videoFormat) {
     return res.status(400).json({ message: "Datos no validos" });
   }
 
-  const newTeam: Team = {
+  const newTeam: LD = {
     id: Date.now(),
-    name,
-    city,
-    titles,
+    filmName,
+    rotationType,
+    region,
+    lengthMinutes,
+    videoFormat,
   };
 
-  teams.push(newTeam);
+  discos.push(newTeam);
   res.status(201).json(newTeam);
 });
 
 // --- DELETE ---
-app.delete("/teams/:id", (req: Request, res: Response) => {
+app.delete("/ld/:id", (req: Request, res: Response) => {
   const id = Number(req.params.id);
-  const exists = teams.some((t) => t.id === id);
+  const exists = discos.some((t) => t.id === id);
   if (!exists) {
     return res.status(404).json({ message: "Error 404" });
   }
-  teams = teams.filter((t) => t.id !== id);
-  res.json({ message: "Equipo eliminado correctamente" });
+  discos = discos.filter((t) => t.id !== id);
+  res.json({ message: "Disco eliminado correctamente" });
 });
 
 setTimeout(() => {
@@ -135,10 +148,12 @@ app.listen(port, () => {
   console.log(`🚀 Server started at http://localhost:${port}`);
 });
 
-/*
+/* // para probar
 {
-  "name": "Warriors",
-  "city": "San Francisco",
-  "titles": 7
+    filmName: "Los 100",
+    rotationType: "CAV",
+    region: "Española",
+    lengthMinutes: 150,
+    videoFormat: "PAL"
 }
 */
