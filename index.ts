@@ -68,7 +68,7 @@ try {
     console.log(res.data);
 
     //Eliminar ese equipo (DELETE /ld/:id)
-    console.log("\nEliminando disco:");
+    console.log("\nEliminando disco...");
     await api.delete(`/ld/${created.data.id}`);
 
     //Mostrar la lista final
