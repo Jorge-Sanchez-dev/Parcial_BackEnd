@@ -1,3 +1,6 @@
+// Jorge Sánchez López
+// Parcial 
+
 import express, {
   type NextFunction,
   type Request,
